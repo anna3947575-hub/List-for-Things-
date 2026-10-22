@@ -23,7 +23,7 @@ before(async () => {
 
   const app = createApp({
     todoStore: store,
-    allowedOrigins: ["http://localhost:5173"],
+    allowedOrigins: ["http://localhost:3000"],
   });
 
   await new Promise((resolve) => {
@@ -130,12 +130,12 @@ test("malformed JSON and unknown routes return JSON errors", async () => {
 
 test("CORS allows configured origins and rejects others", async () => {
   const allowed = await fetch(`${baseUrl}/todos`, {
-    headers: { Origin: "http://localhost:5173" },
+    headers: { Origin: "http://localhost:3000" },
   });
   assert.equal(allowed.status, 200);
   assert.equal(
     allowed.headers.get("access-control-allow-origin"),
-    "http://localhost:5173",
+    "http://localhost:3000",
   );
 
   const blocked = await fetch(`${baseUrl}/todos`, {

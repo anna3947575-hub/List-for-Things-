@@ -2,8 +2,8 @@
 node_modules/
 
 # Production builds
-dist/
-dist-ssr/
+.next/
+out/
 
 # Environment files
 .env
@@ -20,9 +20,6 @@ pnpm-debug.log*
 
 # Test output
 coverage/
-
-# Vite cache
-.vite/
 
 # Temporary files from atomic JSON writes
 backend/data/*.tmp

@@ -1,12 +1,16 @@
 /**
  * All HTTP communication with the backend lives in this module.
  *
- * In development VITE_API_URL is usually unset, so requests go to /api and
- * Vite proxies them to http://localhost:5000. In production, set
- * VITE_API_URL to the deployed backend's URL (for example
- * https://my-api.example.com/api).
+ * Locally, requests go to http://localhost:5000/api. In production, set
+ * NEXT_PUBLIC_API_URL to the deployed backend's URL, including /api, for
+ * example https://my-api.onrender.com/api.
+ *
+ * NEXT_PUBLIC_ variables are embedded at build time, so redeploy the
+ * frontend after changing this value.
  */
-const API_BASE_URL = (import.meta.env.VITE_API_URL || "/api").replace(/\/+$/, "");
+const API_BASE_URL = (
+  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api"
+).replace(/\/+$/, "");
 
 export class ApiError extends Error {
   constructor(message, { status = 0, code = "REQUEST_FAILED", details } = {}) {

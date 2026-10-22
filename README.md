@@ -1,6 +1,6 @@
 # Focus — Full-Stack To-Do List
 
-A modern, responsive to-do application built with **React + Vite** on the frontend and **Node.js + Express** on the backend. Tasks are stored in a JSON file on the server, so they survive page refreshes and server restarts.
+A modern, responsive to-do application built with **React + Next.js** on the frontend and **Node.js + Express** on the backend. Tasks are stored in a JSON file on the server, so they survive page refreshes and server restarts.
 
 ![Focus to-do list preview](docs/preview.png)
 
@@ -22,8 +22,8 @@ The project is intentionally split into two independent applications so you can 
 - Loading skeletons, empty states, and error states
 - Accessible labels, keyboard focus styles, and reduced-motion support
 - All API calls live in `src/api/todos.js`
-- Vite development proxy from `/api` to the Express server
-- Production API URL configured with `VITE_API_URL`
+- Next.js App Router entry point in `app/`
+- Production API URL configured with `NEXT_PUBLIC_API_URL`
 
 ### Backend
 
@@ -41,11 +41,11 @@ The project is intentionally split into two independent applications so you can 
 
 ## Tech stack
 
-| Layer    | Tools                                        |
-| -------- | -------------------------------------------- |
-| Frontend | React, Vite, JavaScript, HTML, CSS, Fetch API |
-| Backend  | Node.js, Express, CORS, JSON file storage     |
-| Testing  | `node:test`, Node's built-in `fetch`          |
+| Layer    | Tools                                             |
+| -------- | ------------------------------------------------- |
+| Frontend | React, Next.js, JavaScript, CSS, Fetch API         |
+| Backend  | Node.js, Express, CORS, JSON file storage          |
+| Testing  | `node:test`, Node's built-in `fetch`               |
 
 ---
 
@@ -54,6 +54,9 @@ The project is intentionally split into two independent applications so you can 
 ```text
 todo-list-app/
 ├── frontend/
+│   ├── app/
+│   │   ├── layout.jsx            # Root layout, metadata, global CSS
+│   │   └── page.jsx              # Next.js page that renders the app
 │   ├── public/
 │   │   ├── favicon.svg
 │   │   └── robots.txt
@@ -71,12 +74,10 @@ todo-list-app/
 │   │   │   ├── TodoList.jsx
 │   │   │   └── TodoListSkeleton.jsx
 │   │   ├── App.jsx
-│   │   ├── main.jsx
 │   │   └── styles.css
 │   ├── .env.example
-│   ├── index.html
-│   ├── package.json
-│   └── vite.config.js
+│   ├── next.config.mjs
+│   └── package.json
 ├── docs/
 │   └── preview.png
 ├── backend/
@@ -107,11 +108,11 @@ todo-list-app/
 
 ## Prerequisites
 
-- **Node.js 18 or newer** — check with `node --version`
+- **Node.js 20.9 or newer** — check with `node --version` (Next.js 16 requirement)
 - **npm** — check with `npm --version`
 - Two terminals, one for each application
 
-The project was built and verified with Node.js 24 and npm 11, but the code only requires Node 18+.
+The project was built and verified with Node.js 24 and npm 11, but the code only requires Node.js 20.9+.
 
 ---
 
@@ -145,9 +146,9 @@ npm install
 npm run dev
 ```
 
-Open **http://localhost:5173**.
+Open **http://localhost:3000**.
 
-During development, requests to `/api` are proxied by Vite to `http://localhost:5000`, so the app works with no frontend environment variables.
+The frontend calls `http://localhost:5000/api` directly during development. No frontend environment file is needed locally because the backend's default CORS origins include `http://localhost:3000`.
 
 > The starter JSON file contains three sample tasks. Edit or delete them like any other task.
 
@@ -157,33 +158,34 @@ During development, requests to `/api` are proxied by Vite to `http://localhost:
 
 ### Backend — `backend/.env`
 
-| Variable         | Default                                             | Purpose                                                   |
-| ---------------- | --------------------------------------------------- | --------------------------------------------------------- |
-| `PORT`           | `5000`                                              | Port the Express server listens on                        |
-| `CLIENT_ORIGINS` | `http://localhost:5173,http://127.0.0.1:5173`       | Comma-separated browser origins allowed by CORS           |
+| Variable         | Default                                       | Purpose                                                   |
+| ---------------- | --------------------------------------------- | --------------------------------------------------------- |
+| `PORT`           | `5000`                                        | Port the Express server listens on                        |
+| `CLIENT_ORIGINS` | `http://localhost:3000,http://127.0.0.1:3000` | Comma-separated browser origins allowed by CORS           |
+| `TODO_DATA_FILE` | `backend/data/todos.json`                     | Optional path to the JSON database file                   |
 
-Example production value:
+Example production values:
 
 ```env
-PORT=5000
 CLIENT_ORIGINS=https://my-todo-app.vercel.app,https://www.my-todo-app.com
+TODO_DATA_FILE=/var/data/todos.json
 ```
 
 Do not add a trailing slash to an origin. An origin looks like `https://example.com`, not `https://example.com/`.
 
-### Frontend — `frontend/.env`
+### Frontend — `frontend/.env.local`
 
-| Variable       | Default | Purpose                                                     |
-| -------------- | ------- | ----------------------------------------------------------- |
-| `VITE_API_URL` | `/api`  | Base URL of the API. Vite's `/api` proxy is used by default |
+| Variable              | Default                     | Purpose                                    |
+| --------------------- | --------------------------- | ------------------------------------------ |
+| `NEXT_PUBLIC_API_URL` | `http://localhost:5000/api` | Base URL of the API, including `/api`      |
 
 For a deployed backend:
 
 ```env
-VITE_API_URL=https://my-todo-api.onrender.com/api
+NEXT_PUBLIC_API_URL=https://my-todo-api.onrender.com/api
 ```
 
-Vite reads environment variables at **build time**, so rebuild the frontend after changing `VITE_API_URL`.
+Next.js embeds `NEXT_PUBLIC_*` variables at **build time**, so redeploy the frontend after changing this value. Locally you can omit the file unless your API runs somewhere other than `http://localhost:5000`.
 
 ---
 
@@ -363,11 +365,11 @@ If the file contains invalid JSON, the server refuses to start and prints a clea
 
 ### Frontend
 
-| Command           | What it does                                  |
-| ----------------- | --------------------------------------------- |
-| `npm run dev`     | Start Vite at http://localhost:5173           |
-| `npm run build`   | Create the production build in `dist/`        |
-| `npm run preview` | Preview the production build at port 4173     |
+| Command         | What it does                                          |
+| --------------- | ----------------------------------------------------- |
+| `npm run dev`   | Start the Next.js development server at port 3000      |
+| `npm run build` | Create the production build in `.next/`                |
+| `npm start`     | Serve the production build locally at port 3000        |
 
 ### Backend
 
@@ -405,25 +407,94 @@ This is why the backend validates data even though the frontend has a required i
 
 ## Deployment
 
-### Backend (Render, Railway, Fly.io, etc.)
+The recommended setup is **Render for the Express API** and **Vercel for the Next.js frontend**.
 
-- Set the project root to `todo-list-app/backend`.
-- Build command: `npm install`
-- Start command: `npm start`
-- Add environment variables:
-  - `PORT` — usually provided automatically by the host
-  - `CLIENT_ORIGINS` — your deployed frontend origin(s)
-- Add a **persistent disk** if the host uses ephemeral filesystems. Without one, `todos.json` will reset when the service redeploys or restarts.
+### 1. Deploy the backend to Render
 
-### Frontend (Vercel, Netlify, Cloudflare Pages, etc.)
+Push the repository to GitHub first, then create a new **Web Service** on Render and connect the repository.
 
-- Set the project root to `todo-list-app/frontend`.
-- Build command: `npm run build`
-- Output directory: `dist`
-- Add `VITE_API_URL` with the deployed API URL, for example:
-  `VITE_API_URL=https://my-todo-api.onrender.com/api`
+Use these settings:
 
-After deploying the frontend, copy its exact origin into the backend's `CLIENT_ORIGINS` and restart the backend.
+| Setting           | Value                                  |
+| ----------------- | -------------------------------------- |
+| Language          | Node                                   |
+| Branch            | `main`                                 |
+| Root Directory    | `backend`                              |
+| Build Command     | `npm ci`                               |
+| Start Command     | `npm start`                            |
+| Health Check Path | `/api/health`                          |
+| Instance Type     | Free is fine for a demo                |
+
+Add these environment variables:
+
+| Variable         | Value                                                        |
+| ---------------- | ------------------------------------------------------------ |
+| `NODE_VERSION`   | `22`                                                         |
+| `CLIENT_ORIGINS` | Your Vercel production origin, added after the frontend deploy |
+| `TODO_DATA_FILE` | `/var/data/todos.json` (only when using a persistent disk)   |
+
+Do **not** set `PORT`; Render provides it automatically and the server already reads it.
+
+Deploy the service, then verify:
+
+```text
+https://YOUR-SERVICE.onrender.com/api/health
+```
+
+#### Keeping tasks after restarts
+
+Render's filesystem is ephemeral on the Free instance type, so `todos.json` can reset after a restart or redeploy. To keep tasks:
+
+1. Upgrade the service to a paid instance type that supports persistent disks.
+2. Add a disk with mount path `/var/data`.
+3. Add `TODO_DATA_FILE=/var/data/todos.json`.
+4. Redeploy. The store creates the file and seeds it with the starter tasks on first boot.
+
+### 2. Deploy the frontend to Vercel
+
+Import the same GitHub repository into Vercel and use these settings:
+
+| Setting           | Value                                              |
+| ----------------- | -------------------------------------------------- |
+| Framework Preset  | Next.js                                            |
+| Root Directory    | `frontend`                                         |
+| Build Command     | `npm run build`                                    |
+| Output Directory  | Leave the Next.js default (`.next`)                |
+| Install Command   | `npm ci`                                           |
+| Node.js Version   | 22.x (Next.js 16 requires Node.js 20.9 or newer)   |
+
+Add this environment variable under **Settings → Environment Variables**:
+
+```env
+NEXT_PUBLIC_API_URL=https://YOUR-SERVICE.onrender.com/api
+```
+
+Set it for **Production** (and Preview if you want preview deployments to call the live API). The URL must include `/api`.
+
+Deploy the frontend, then copy its exact production domain from **Settings → Domains**, for example:
+
+```text
+https://my-todo-app.vercel.app
+```
+
+### 3. Connect CORS and redeploy
+
+Go back to Render and set:
+
+```env
+CLIENT_ORIGINS=https://my-todo-app.vercel.app
+```
+
+Add multiple origins as a comma-separated list if you have a custom domain. Do not add a trailing slash or a path. Saving the environment variable triggers a redeploy/restart.
+
+Finally, open the Vercel URL and confirm that you can add, edit, complete, filter, and delete tasks.
+
+**Order matters:**
+
+1. Deploy the backend.
+2. Deploy the frontend with `NEXT_PUBLIC_API_URL`.
+3. Put the Vercel production domain in Render's `CLIENT_ORIGINS`.
+4. If you change `NEXT_PUBLIC_API_URL` later, redeploy the Vercel project.
 
 **Production note:** a JSON file is excellent for learning and small single-server projects, but it is not a good long-term database for multi-instance or serverless deployments. For a real production app, move the persistence layer to PostgreSQL, SQLite with a managed volume, or another database while keeping the same HTTP API.
 
@@ -436,21 +507,25 @@ After deploying the frontend, copy its exact origin into the backend's `CLIENT_O
 - Make sure the backend is running at http://localhost:5000.
 - Check `curl.exe http://localhost:5000/api/health`.
 - Make sure no other process is using port 5000.
-- If the frontend is deployed, confirm `VITE_API_URL` points to the deployed API and rebuild.
+- If the frontend is deployed, confirm `NEXT_PUBLIC_API_URL` points to the deployed API and redeploy the frontend.
 
 ### CORS error in the browser
 
-Add the frontend's exact origin to `CLIENT_ORIGINS`, then restart the backend:
+Add the frontend's exact origin to `CLIENT_ORIGINS`, then restart or redeploy the backend:
 
 ```env
-CLIENT_ORIGINS=http://localhost:5173,https://your-frontend.example.com
+CLIENT_ORIGINS=http://localhost:3000,https://your-frontend.example.com
 ```
 
 Do not include paths or a trailing slash.
 
+### The deployed frontend still calls localhost
+
+`NEXT_PUBLIC_API_URL` was missing or changed after the build. Add it in Vercel's environment variables, then trigger a new deployment.
+
 ### Port already in use
 
-Change `PORT` in `backend/.env` and the target in `frontend/vite.config.js` to match.
+Change the backend's `PORT` in `backend/.env`. The frontend API URL is configured separately with `NEXT_PUBLIC_API_URL`.
 
 ### Tasks disappeared after a redeploy
 

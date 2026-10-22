@@ -1,3 +1,5 @@
+import "dotenv/config";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { TodoStore } from "./lib/todoStore.js";
 
@@ -25,7 +27,13 @@ const starterTodos = [
   },
 ];
 
+const configuredDataFile = process.env.TODO_DATA_FILE?.trim();
+
 export const todoStore = new TodoStore({
-  filePath: fileURLToPath(new URL("../data/todos.json", import.meta.url)),
+  // A mounted persistent disk can be used in production by setting
+  // TODO_DATA_FILE to a path such as /var/data/todos.json.
+  filePath: configuredDataFile
+    ? path.resolve(configuredDataFile)
+    : fileURLToPath(new URL("../data/todos.json", import.meta.url)),
   initialTodos: starterTodos,
 });
