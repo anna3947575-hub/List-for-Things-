@@ -1,0 +1,21 @@
+{
+  "name": "todo-list-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "REST API for the Focus to-do list application.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  }
+}
